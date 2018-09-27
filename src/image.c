@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <math.h>
 
+// MY LIBS
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -15,6 +21,8 @@ int windows = 0;
 float colors[6][3] = { {1,0,1}, {0,0,1},{0,1,1},{0,1,0},{1,1,0},{1,0,0} };
 
 float get_color(int c, int x, int max)
+
+
 {
     float ratio = ((float)x/max)*5;
     int i = floor(ratio);
@@ -236,6 +244,22 @@ image **load_alphabet()
     return alphabets;
 }
 
+
+// MY CODE
+int intN(int n) { return rand() % n; }
+
+char *randomString(int len) {
+    // TODO DETERMINE IF THIS IS EFFICIENT
+    const char alphabet[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+    char *rstr = malloc((len + 1) * sizeof(char));
+    int i;
+    for (i = 0; i < len; i++) {
+        rstr[i] = alphabet[intN(strlen(alphabet))];
+    }
+    rstr[len] = '\0';
+    return rstr;
+}
+
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {
     int i,j;
@@ -291,9 +315,22 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
             if(bot > im.h-1) bot = im.h-1;
 
             draw_box_width(im, left, top, right, bot, width, red, green, blue);
+
             if (alphabet) {
                 image label = get_label(alphabet, labelstr, (im.h*.03));
                 draw_label(im, top + width, left, label, rgb);
+
+                // RANDOM HASH FOR FILE NAME
+                 char *p;
+                 p = randomString(10);
+                 printf("%s\n", p);
+                // TODO FILE PATH
+                // TODO SAVE BY Classification
+                // TODO LIMIT THE NUMBER OF SAVES
+                // save_img is a custom function that saves the files
+                save_img(im, p);
+
+                free(p);
                 free_image(label);
             }
             if (dets[i].mask){
@@ -575,6 +612,37 @@ void save_image(image im, const char *name)
 {
     save_image_options(im, name, JPG, 80);
 }
+
+void save_img_options(image im, char *name, IMTYPE f, int quality)
+{
+    char buff[256];
+    //sprintf(buff, "%s (%d)", name, windows);
+    if(f == PNG)       sprintf(buff, "%s.png", name);
+    else if (f == BMP) sprintf(buff, "%s.bmp", name);
+    else if (f == TGA) sprintf(buff, "%s.tga", name);
+    else if (f == JPG) sprintf(buff, "%s.jpg", name);
+    else               sprintf(buff, "%s.png", name);
+    unsigned char *data = calloc(im.w*im.h*im.c, sizeof(char));
+    int i,k;
+    for(k = 0; k < im.c; ++k){
+        for(i = 0; i < im.w*im.h; ++i){
+            data[i*im.c+k] = (unsigned char) (255*im.data[i + k*im.w*im.h]);
+        }
+    }
+    int success = 0;
+    if(f == PNG)       success = stbi_write_png(buff, im.w, im.h, im.c, data, im.w*im.c);
+    else if (f == BMP) success = stbi_write_bmp(buff, im.w, im.h, im.c, data);
+    else if (f == TGA) success = stbi_write_tga(buff, im.w, im.h, im.c, data);
+    else if (f == JPG) success = stbi_write_jpg(buff, im.w, im.h, im.c, data, quality);
+    free(data);
+    if(!success) fprintf(stderr, "Failed to write image %s\n", buff);
+}
+
+void save_img(image im, char *name)
+{
+    save_img_options(im, name, PNG, 80);
+}
+
 
 void show_image_layers(image p, char *name)
 {
