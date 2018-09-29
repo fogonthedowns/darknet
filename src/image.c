@@ -260,6 +260,15 @@ char *randomString(int len) {
     return rstr;
 }
 
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {
     int i,j;
@@ -323,12 +332,14 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
                 // RANDOM HASH FOR FILE NAME
                  char *p;
                  p = randomString(10);
-                 printf("%s\n", p);
+                 char *path;
+                 path = concat("/home/jz/hack/c/images/",p);
+                 printf("%s\n", path);
                 // TODO FILE PATH
                 // TODO SAVE BY Classification
                 // TODO LIMIT THE NUMBER OF SAVES
                 // save_img is a custom function that saves the files
-                save_img(im, p);
+                save_img(im, path);
 
                 free(p);
                 free_image(label);
