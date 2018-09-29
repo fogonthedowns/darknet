@@ -19,6 +19,9 @@
 int windows = 0;
 
 float colors[6][3] = { {1,0,1}, {0,0,1},{0,1,1},{0,1,0},{1,1,0},{1,0,0} };
+int modvalue = 10;
+int count = 5;
+
 
 float get_color(int c, int x, int max)
 
@@ -272,7 +275,6 @@ char* concat(const char *s1, const char *s2)
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {
     int i,j;
-
     for(i = 0; i < num; ++i){
         char labelstr[4096] = {0};
         int class = -1;
@@ -330,25 +332,39 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
                 draw_label(im, top + width, left, label, rgb);
 
                 // RANDOM HASH FOR FILE NAME
-                 char *hash;
-                 hash = randomString(10);
-                 char *labelpath;
-                 labelpath = concat("/home/jz/hack/c/images/",labelstr);
-                 char *labelpathwithbackslash;
-                 labelpathwithbackslash = concat(labelpath,"/");
+                char *hash;
+                char *labelpath;
+                char *labelpathwithbackslash;
+                char *path;
 
-                 char *path;
-                 path = concat(labelpathwithbackslash, hash);
-                 printf("%s\n", path);
+                hash = randomString(10);
+                labelpath = concat("/home/jz/hack/c/images/",labelstr);
+                labelpathwithbackslash = concat(labelpath,"/");
+                path = concat(labelpathwithbackslash, hash);
                 // TODO SAVE BY Classification - FOLDER MUST EXIST, if it does not, do some error handling
                 // TODO LIMIT THE NUMBER OF SAVES
-                // save_img is a custom function that saves the files
-                save_img(im, path);
+                // save_img is custom 
+                if (count % modvalue == 0) {
+                    printf("\nsaving!%d\n",count);
+                    save_img(im, path);
+                } else {
+                    printf("\nCount :%d\n",count);
+                }
+                
+                if (count<100) {
+                    modvalue = 10;
+                } else if ((count>100) && (count<1000)) {
+                    modvalue = 100;
+                }
+                
 
                 free(path);
                 free(hash);
                 free(labelpath);
-                free(labelpathwithbackslash);            }
+                free(labelpathwithbackslash);   
+                free_image(label);
+                count++;        
+            }
             if (dets[i].mask){
                 image mask = float_to_image(14, 14, 1, dets[i].mask);
                 image resized_mask = resize_image(mask, b.w*im.w, b.h*im.h);
