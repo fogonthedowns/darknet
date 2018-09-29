@@ -330,20 +330,25 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
                 draw_label(im, top + width, left, label, rgb);
 
                 // RANDOM HASH FOR FILE NAME
-                 char *p;
-                 p = randomString(10);
+                 char *hash;
+                 hash = randomString(10);
+                 char *labelpath;
+                 labelpath = concat("/home/jz/hack/c/images/",labelstr);
+                 char *labelpathwithbackslash;
+                 labelpathwithbackslash = concat(labelpath,"/");
+
                  char *path;
-                 path = concat("/home/jz/hack/c/images/",p);
+                 path = concat(labelpathwithbackslash, hash);
                  printf("%s\n", path);
-                // TODO FILE PATH
-                // TODO SAVE BY Classification
+                // TODO SAVE BY Classification - FOLDER MUST EXIST, if it does not, do some error handling
                 // TODO LIMIT THE NUMBER OF SAVES
                 // save_img is a custom function that saves the files
                 save_img(im, path);
 
-                free(p);
-                free_image(label);
-            }
+                free(path);
+                free(hash);
+                free(labelpath);
+                free(labelpathwithbackslash);            }
             if (dets[i].mask){
                 image mask = float_to_image(14, 14, 1, dets[i].mask);
                 image resized_mask = resize_image(mask, b.w*im.w, b.h*im.h);
